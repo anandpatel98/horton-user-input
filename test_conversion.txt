@@ -1,0 +1,13 @@
+calculation dft
+
+spin singlet
+functional lda_x
+verbosity low
+scf oda
+
+Coordinates
+
+H 0.783837 -0.492236 -0.00000
+O -0.000000 0.062020 -0.00000
+H -0.783837 -0.492236 -0.00000
+ 
