@@ -109,12 +109,13 @@ else:
 
 # takes the spin multiplicity and the charge, and works out the number of alpha and beta electrons <---- Take another look at this part of the code, there is a built in function to do this in horton
 
+
 charge = int(ds.user_input_defaults["charge"])
 multiplicity = ds.user_input_defaults["spin"]
 
 multiplicity_conversion ={'singlet' : 1, 'doublet' : 2, 'triplet' : 3, 'quartet' : 4, 'quintet' : 5} # add more entries as needed
 
-int_multiplicity = multiplicity_conversion[multiplicity] 
+int_multiplicity = multiplicity_conversion[multiplicity]
 
 paired_electrons= aa.total_electrons-(int_multiplicity-1)
 nalpha= (int_multiplicity -1) + (paired_electrons/2)
@@ -128,7 +129,7 @@ if uip.test:
     print 'nbeta %s' %(nbeta)
     if 'lib' in locals():
         print "lib_initialized"
-    
+
     
 
 
