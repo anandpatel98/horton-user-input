@@ -1,7 +1,7 @@
 import user_input_parsing as uip
 import atom_attributes as aa
 import default_selection as ds
-from horton import *
+from horton import * #TODO: No * imports
 
 import numpy as np
 
@@ -9,8 +9,8 @@ import numpy as np
 
 # sets the verbosity
 
-if ds.user_input_defaults['verbosity'] == 'silent':
-    log.set_level(log.silent)
+if ds.user_input_defaults['verbosity'] == 'silent': #TODO: 1 statement
+    log.set_level(log.silent) # TODO ds.user... change to dummy var
 elif ds.user_input_defaults['verbosity'] == 'warning':
     log.set_level(log.warning)
 elif ds.user_input_defaults['verbosity'] == 'low':
@@ -26,52 +26,50 @@ else:
            
 # should the user specify the units that the coordinate matrix is in? This assumes that the units are in angstroms and are converted to au
 
+ds.user_input_defaults['coordinate_array']= angstrom*ds.user_input_defaults['coordinate_array']
 
-ds.user_input_defaults['coordinate_array']= angstrom*np.array(ds.user_input_defaults['coordinate_array'])
-
-# takes the atoms and creates a vector with atomic numbers. the counter variable is there in order to access array elements.
+# takes a vector with atomic symbols and converts it to the corresponding atomic numbers
 
 i=0
-for s in np.nditer(ds.user_input_defaults["atom_array"], ["refs_ok"]):
+for s in np.nditer(ds.user_input_defaults["atom_array"], ["refs_ok"]): #TODO: use enumerate and convert in aa
     ds.user_input_defaults["atom_array"][i] = aa.atom_electrons[str(s)]
     i += 1
 ds.user_input_defaults["atom_array"]= ds.user_input_defaults["atom_array"].astype(int)
 
-# Suite of statements for hartree-fock
+# Initialize molecule -> TODO add (remove) things that should (not) be included in the molecule description
 
-if ds.user_input_defaults['calculation'] == 'hf':
-    mol= Molecule(coordinates = np.squeeze(ds.user_input_defaults['coordinate_array']), energy= float(ds.user_input_defaults['energy']),  numbers= np.squeeze(ds.user_input_defaults['atom_array']),  basis= ds.user_input_defaults['basis'], restriction= ds.user_input_defaults['restriction'], iterations= int(ds.user_input_defaults['iterations']), intgrid= ds.user_input_defaults['grid'])
+mol= Molecule(coordinates = ds.user_input_defaults['coordinate_array'], energy= ds.user_input_defaults['energy'],  numbers= ds.user_input_defaults['atom_array'],  basis= ds.user_input_defaults['basis'], restriction= ds.user_input_defaults['restriction'], iterations= ds.user_input_defaults['iterations'], intgrid= ds.user_input_defaults['grid'])
 
 
 # Statements for dft
+#TODO sanity checks to make sure that only one exchange and one correlation functional is specified, and to warn users if they have omitted either the exchange or correlation energy -> you need a list of both exchange and correlation functionals,  aling with those that are combos. Note that hybrid != combo functional (can be only exchange)
 
 if ds.user_input_defaults["calculation"]== 'dft':
-
-    mol= Molecule(coordinates = np.squeeze(ds.user_input_defaults['coordinate_array']), energy= float(ds.user_input_defaults['energy']),  numbers= np.squeeze(ds.user_input_defaults['atom_array']),  basis= ds.user_input_defaults['basis'], restriction= ds.user_input_defaults['restriction'], iterations= int(ds.user_input_defaults['iterations']), intgrid= ds.user_input_defaults['grid'])
-    
 
     # Initializes the right libxc functional. Does this for hybrid functionals, or seperate exchange/ correlation functionals.
     lib=[]
     hybrid = None
     functional_dict = {}
-    functionals_seperated = ds.user_input_defaults['functional'].split(' ')
-    ex_corr = False
-    if len(functionals_seperated) == 2:
-        ex_corr == True
+    functionals_seperated = ds.user_input_defaults['functional'].split() #remove ' '
     if len(functionals_seperated) > 2:
         raise ValueError, "You cannot specify more than two functionals" 
     for entry in functionals_seperated:
         functional_temp = entry.split('_')
-        functional_dict[''.join(functional_temp[0].lower())] = '_'.join(functional_temp[1:])
-    for key in functional_dict.keys():
-        if key == 'lda':
-            lib.append(RLibXCLDA(functional_dict[key]))
-        elif key == 'gga':
-            lib.append(RLibXCGGA(functional_dict[key]))
-        elif key == 'hyb':
-            hybrid = functional_dict[key]
-            clean_functional = string.split(functional_dict[key])
-            lib.append(RLibXCHybridGGA('_'.join(clean_functional[2:])))
+        functional_header = functional_temp[0]
+        if functional_temp[0] == 'hyb':
+            functional_remainder = '_'.join(functional_temp[2:])
+        elif functional_temp[0] == 'gga' or functional_temp[0] == 'lda':
+            functional_remainder = '_'.join(functional_temp[1:])
+        else:
+            raise ValueError, 'Please ensure your specified functionals are supported'# TODO find better error message
+
+        if functional_header == 'lda':
+            lib.append(RLibXCLDA(functional_remainder))
+        elif functional_header == 'gga':
+            lib.append(RLibXCGGA(functional_remainder))
+        elif functional_header == 'hyb':
+            lib.append(RLibXCHybridGGA(functional_remainder))
+            hybrid = RLibXCHybridGGA(functional_remainder) #better way to do this, and what about unrestricted?
         else:
             raise ValueError, "The type of functional specified is not a valid option currently."
 
@@ -90,9 +88,9 @@ if ds.user_input_defaults["calculation"]== 'dft':
 
 if ds.user_input_defaults['scf'] == 'oda':
     scf_solver = ODASCFSolver(mol.energy, mol.iterations)
-    expansion = False
+    expansion = False #TODO: use scf.kind instead
 elif ds.user_input_defaults['scf'] == 'scf':
-    scf_solver = PlainSCFSolver(mol.energy, mol.iterations)
+    scf_solver = PlainSCFSolver(threshold =mol.energy, maxiter = mol.iterations)
     expansion = True
 elif ds.user_input_defaults['scf'] == 'ediis2':
     scf_solver = EDIIS2SCFSolver(mol.energy, mol.iterations)
@@ -107,8 +105,7 @@ else:
     raise ValueError, "The type of SCF solver specified is not a valid option currently."
 
 
-# takes the spin multiplicity and the charge, and works out the number of alpha and beta electrons <---- Take another look at this part of the code, there is a built in function to do this in horton
-
+# takes the spin multiplicity and the charge, and works out the number of alpha and beta electrons
 
 charge = int(ds.user_input_defaults["charge"])
 multiplicity = ds.user_input_defaults["spin"]
@@ -121,15 +118,14 @@ paired_electrons= aa.total_electrons-(int_multiplicity-1)
 nalpha= (int_multiplicity -1) + (paired_electrons/2)
 nbeta = (paired_electrons/2)
 
-ds.user_input_defaults["nalpha"] = nalpha
+ds.user_input_defaults["nalpha"] = nalpha #Can use molecule instead.
 ds.user_input_defaults["nbeta"] = nbeta
 
-if uip.test:
+if uip.unit_test_check:
     print "nalpha %s" %(nalpha)
     print 'nbeta %s' %(nbeta)
     if 'lib' in locals():
         print "lib_initialized"
 
-    
 
 

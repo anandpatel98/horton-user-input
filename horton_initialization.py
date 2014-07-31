@@ -37,10 +37,10 @@ if ds.user_input_defaults["calculation"] == "hf":
         ]
         ham = REffHam(terms, external)
         occ_model = AufbauOccModel(ic.nalpha)
-        occ_model.assign(exp_alpha) # Taken from hfs run file. Ask if this is okay
+        occ_model.assign(exp_alpha)# Taken from hfs run file. Ask if this is okay
         dm_alpha = exp_alpha.to_dm()
         scf_solver= ic.scf_solver
-        if ic.expansion:
+        if scf_solver.kind == 'exp':
             scf_solver(ham, lf, olp, occ_model, exp_alpha)
         else:
             scf_solver(ham, lf, olp, occ_model, dm_alpha)
@@ -62,7 +62,7 @@ if ds.user_input_defaults["calculation"] == "hf":
         dm_alpha = exp_alpha.to_dm()
         dm_beta= exp_beta.to_dm()
         scf_solver= ic.scf_solver
-        if ic.expansion:
+        if scf_solver.kind == 'exp':
             scf_solver(ham, lf, olp, occ_model, exp_alpha, exp_beta)
         else:
             scf_solver(ham, lf, olp, occ_model, dm_alpha, dm_beta)
@@ -81,10 +81,10 @@ if ds.user_input_defaults["calculation"] == "dft":
             ROneBodyTerm(kin, 'kin'),
             RDirectTerm(er, 'hartree'),
             RGridGroup(obasis, grid, ic.lib),
-            ROneBodyTerm(na, 'ne'),
+            ROneBodyTerm(na, 'ne')
         ]
-        if exchange_term() != None:
-            terms.append(exchange_term())
+        if exchange_term():
+            terms.append(exchange_term()) 
         ham = REffHam(terms, external)
         
         occ_model = AufbauOccModel(ic.nalpha)
@@ -92,7 +92,7 @@ if ds.user_input_defaults["calculation"] == "dft":
         dm_alpha = exp_alpha.to_dm()
         
         scf_solver = ic.scf_solver
-        if ic.expansion:
+        if scf_solver.kind == 'exp':
             scf_solver(ham, lf, olp, occ_model, exp_alpha)
         else:
             scf_solver(ham, lf, olp, occ_model, dm_alpha)
@@ -111,7 +111,7 @@ if ds.user_input_defaults["calculation"] == "dft":
             UGridGroup(obasis, grid, ic.lib),
             UOneBodyTerm(na, 'ne'),
         ]
-        if exchange_term()  != None:
+        if exchange_term():
             terms.append(exchange_term())
         ham = UEffHam(terms, external)
 
@@ -122,7 +122,7 @@ if ds.user_input_defaults["calculation"] == "dft":
         
         scf_solver = ic.scf_solver
 
-        if ic.expansion:
+        if scf_solver.kind == 'exp': 
             scf_solver(ham, lf, olp, occ_model, exp_alpha, exp_beta)
         else:
             scf_solver(ham, lf, olp, occ_model, dm_alpha, dm_beta)

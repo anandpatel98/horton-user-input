@@ -13,7 +13,7 @@ except:
 try:
     unit_test_check= sys.argv[2] == 'test'
 except:
-    unit_test_check = None
+    unit_test_check = None # TODO shouldn't have pass here?
 
 user_input= {}
 atom_list=[]

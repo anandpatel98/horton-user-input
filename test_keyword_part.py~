@@ -38,7 +38,7 @@ def test_atom_attributes():
             total_electrons = output_list[i+1]
         if output_list[i] == 'even_electrons':
             even_electrons = output_list[i+1]
-        i += 1
+        i = i+1
     assert diatomic
     assert total_electrons == '184'
     assert even_electrons

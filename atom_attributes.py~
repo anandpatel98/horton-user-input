@@ -15,7 +15,7 @@ for atom in np.nditer(uip.user_input['atom_array']):
 even_electrons = total_electrons%2==0
 diatomic = len(uip.user_input['atom_array']) == 2 and uip.user_input['atom_array'][0] == uip.user_input['atom_array'][1]
 
-if uip.unit_test_check:
+if uip.test:
     print 'diatomic %s' %(diatomic)
     print 'even_electrons %s' %(even_electrons)
     print 'total_electrons %s' %(total_electrons)

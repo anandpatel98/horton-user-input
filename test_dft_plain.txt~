@@ -1,5 +1,5 @@
 calculation dft
-scf oda
+scf scf
 basis 3-21G
 
 
